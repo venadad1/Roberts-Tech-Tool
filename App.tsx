@@ -111,6 +111,49 @@ const App: React.FC = () => {
     setIsGenerating(false);
   };
 
+  const handleRegenerateSingle = async (imageId: string) => {
+    if (!process.env.API_KEY) {
+        alert("API Key is missing.");
+        return;
+    }
+
+    const itemIndex = results.findIndex(r => r.id === imageId);
+    if (itemIndex === -1) return;
+    const item = results[itemIndex];
+
+    // Set individual status to loading
+    setResults(prev => {
+        const next = [...prev];
+        next[itemIndex] = { ...next[itemIndex], status: 'loading', error: undefined };
+        return next;
+    });
+
+    try {
+        // Use current global characters and settings state, so user can tweak settings before regenerating one
+        const base64Image = await generateImageFromPrompt(item.promptText, characters, settings);
+        setResults(prev => {
+            const next = [...prev];
+            next[itemIndex] = { 
+                ...next[itemIndex], 
+                imageUrl: base64Image, 
+                status: 'success' 
+            };
+            return next;
+        });
+    } catch (err) {
+        console.error("Regeneration failed:", err);
+        setResults(prev => {
+            const next = [...prev];
+            next[itemIndex] = { 
+                ...next[itemIndex], 
+                status: 'error', 
+                error: 'Failed to regenerate' 
+            };
+            return next;
+        });
+    }
+  };
+
   const downloadAll = () => {
     const successImages = results.filter(r => r.status === 'success');
     successImages.forEach((img, index) => {
@@ -133,7 +176,7 @@ const App: React.FC = () => {
             
           {/* Header */}
           <div className="border-b border-gray-700 pb-4">
-            <h1 className="text-2xl font-bold text-white">Robert's Tech Tool</h1>
+            <h1 className="text-2xl font-bold text-white">Srdjan's Multiple Character Tool</h1>
             <p className="text-gray-400 text-xs mt-1">Consistent Character Story Creator</p>
           </div>
 
@@ -272,6 +315,7 @@ const App: React.FC = () => {
                 key={img.id} 
                 image={img} 
                 onPreview={setPreviewImage} 
+                onRegenerate={handleRegenerateSingle}
               />
             ))}
           </div>

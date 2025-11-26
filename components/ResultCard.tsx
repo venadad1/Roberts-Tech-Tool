@@ -5,9 +5,10 @@ import { Button } from './Button';
 interface ResultCardProps {
   image: GeneratedImage;
   onPreview: (image: GeneratedImage) => void;
+  onRegenerate: (id: string) => void;
 }
 
-export const ResultCard: React.FC<ResultCardProps> = ({ image, onPreview }) => {
+export const ResultCard: React.FC<ResultCardProps> = ({ image, onPreview, onRegenerate }) => {
   const handleDownload = () => {
     if (!image.imageUrl) return;
     const a = document.createElement('a');
@@ -26,8 +27,17 @@ export const ResultCard: React.FC<ResultCardProps> = ({ image, onPreview }) => {
              <div className="w-8 h-8 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : image.status === 'error' ? (
-          <div className="absolute inset-0 flex items-center justify-center text-red-400 p-4 text-center text-sm">
-             Error Generating Image
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-red-400 p-4 text-center text-sm gap-2">
+             <span>Error Generating Image</span>
+             <button 
+               onClick={() => onRegenerate(image.id)}
+               className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white text-xs rounded border border-gray-600 flex items-center gap-1 transition-colors"
+             >
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+               </svg>
+               Retry
+             </button>
           </div>
         ) : (
           <>
@@ -49,14 +59,26 @@ export const ResultCard: React.FC<ResultCardProps> = ({ image, onPreview }) => {
           {image.promptText}
         </p>
         <div className="flex justify-between items-center mt-auto">
-            <span className="text-[10px] text-gray-500 font-mono">{image.fileName}</span>
-            {image.status === 'success' && (
-              <button onClick={handleDownload} className="text-brand-red hover:text-white transition-colors">
+            <span className="text-[10px] text-gray-500 font-mono truncate max-w-[120px]" title={image.fileName}>{image.fileName}</span>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => onRegenerate(image.id)} 
+                disabled={image.status === 'loading'}
+                className="text-gray-500 hover:text-brand-red transition-colors p-1" 
+                title="Regenerate this image"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
-            )}
+              {image.status === 'success' && (
+                <button onClick={handleDownload} className="text-gray-500 hover:text-white transition-colors p-1" title="Download">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              )}
+            </div>
         </div>
       </div>
     </div>
